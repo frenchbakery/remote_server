@@ -9,6 +9,7 @@
  */
 #include <kipr/create/create.h>
 #include <nlohmann/json.hpp>
+#include "term_colors.h"
 #include "control.hpp"
 #include <iostream>
 #include <vector>
@@ -64,6 +65,7 @@ void handle_get(json data, json &out)
     {
         if (!data.contains("port"))
         {
+            out["success"] = false;
             out["reason"] = "message doesn't contain \"port\" key";
             return;
         }
@@ -71,6 +73,7 @@ void handle_get(json data, json &out)
         int port = data["port"];
         if (!(0 <= port && port <= 4))
         {
+            out["success"] = false;
             out["reason"] = "invalid motor port";
             return;
         }
@@ -80,10 +83,11 @@ void handle_get(json data, json &out)
     }
 
     // servos
-    else if (request == "servo")
+    else if (request == "servo_pos")
     {
         if (!data.contains("port"))
         {
+            out["success"] = false;
             out["reason"] = "message doesn't contain \"port\" key";
             return;
         }
@@ -91,6 +95,7 @@ void handle_get(json data, json &out)
         int port = data["port"];
         if (!(0 <= port && port <= 4))
         {
+            out["success"] = false;
             out["reason"] = "invalid servo port";
             return;
         }
@@ -98,12 +103,33 @@ void handle_get(json data, json &out)
         out["success"] = true;
         out["value"] = Control::servos[port]->position();
     }
+    else if (request == "servo_enabled")
+    {
+        if (!data.contains("port"))
+        {
+            out["success"] = false;
+            out["reason"] = "message doesn't contain \"port\" key";
+            return;
+        }
+
+        int port = data["port"];
+        if (!(0 <= port && port <= 4))
+        {
+            out["success"] = false;
+            out["reason"] = "invalid servo port";
+            return;
+        }
+
+        out["success"] = true;
+        out["value"] = Control::servos[port]->isEnabled();
+    }
 
     // digitals
     else if (request == "digital")
     {
         if (!data.contains("port"))
         {
+            out["success"] = false;
             out["reason"] = "message doesn't contain \"port\" key";
             return;
         }
@@ -111,6 +137,7 @@ void handle_get(json data, json &out)
         int port = data["port"];
         if (!(0 <= port && port <= 10))
         {
+            out["success"] = false;
             out["reason"] = "invalid digital port";
             return;
         }
@@ -124,6 +151,7 @@ void handle_get(json data, json &out)
     {
         if (!data.contains("port"))
         {
+            out["success"] = false;
             out["reason"] = "message doesn't contain \"port\" key";
             return;
         }
@@ -131,6 +159,7 @@ void handle_get(json data, json &out)
         int port = data["port"];
         if (!(0 <= port && port <= 5))
         {
+            out["success"] = false;
             out["reason"] = "invalid analog port";
             return;
         }
@@ -138,6 +167,129 @@ void handle_get(json data, json &out)
         out["success"] = true;
         out["value"] = Control::analogs[port]->value();
 
+    }
+
+    // undefined
+    else
+    {
+        out["success"] = false;
+        out["reason"] = "invalid request type";
+    }
+}
+
+
+/**
+ * @brief handle all set requests
+ * 
+ * @param data input json object
+ * @param out output json object
+ */
+void handle_set(json data, json &out)
+{
+    std::string request = data["request"];
+
+    // motors
+    if (request == "motor")
+    {
+        if (!data.contains("port"))
+        {
+            out["success"] = false;
+            out["reason"] = "message doesn't contain \"port\" key";
+            return;
+        }
+
+        int port = data["port"];
+        if (!(0 <= port && port <= 4))
+        {
+            out["success"] = false;
+            out["reason"] = "invalid motor port";
+            return;
+        }
+
+        if (!data.contains("velocity"))
+        {
+            out["success"] = false;
+            out["reason"] = "message doesn't contain \"velocity\" key";
+            return;
+        }
+
+        int velocity = data["velocity"];
+        if (!(-1500 <= velocity && velocity <= 1500))
+        {
+            out["success"] = false;
+            out["reason"] = "invalid motor velocity";
+            return;
+        }
+
+        Control::motors[port]->moveAtVelocity(velocity);
+
+        out["success"] = true;
+    }
+
+    // servos
+    else if (request == "servo_pos")
+    {
+        if (!data.contains("port"))
+        {
+            out["success"] = false;
+            out["reason"] = "message doesn't contain \"port\" key";
+            return;
+        }
+
+        int port = data["port"];
+        if (!(0 <= port && port <= 4))
+        {
+            out["success"] = false;
+            out["reason"] = "invalid servo port";
+            return;
+        }
+
+        if (!data.contains("position"))
+        {
+            out["success"] = false;
+            out["reason"] = "message doesn't contain \"position\" key";
+            return;
+        }
+
+        int position = data["position"];
+        if (!(0 <= position && position <= 2047))
+        {
+            out["success"] = false;
+            out["reason"] = "invalid servo position";
+            return;
+        }
+
+
+        Control::servos[port]->setPosition(position);
+        out["success"] = true;
+    }
+    else if (request == "servo_enabled")
+    {
+        if (!data.contains("port"))
+        {
+            out["success"] = false;
+            out["reason"] = "message doesn't contain \"port\" key";
+            return;
+        }
+
+        int port = data["port"];
+        if (!(0 <= port && port <= 4))
+        {
+            out["success"] = false;
+            out["reason"] = "invalid servo port";
+            return;
+        }
+
+        if (!data.contains("enabled"))
+        {
+            out["success"] = false;
+            out["reason"] = "message doesn't contain \"enabled\" key";
+            return;
+        }
+
+
+        Control::servos[port]->setEnabled(data["enabled"]);
+        out["success"] = true;
     }
 
     // undefined
@@ -175,15 +327,16 @@ std::string Control::message_handler(std::string message)
                 handle_get(data, out);
             }
         }
-        else if (type == "post")
+        else if (type == "set")
         {
-            std::cout << "POST\n";
-            out["success"] = false;
-            out["reason"] = "Not implemented yet";
-        }
-        else if (type == "NaN")
-        {
-            std::cout << "tpye not found in data\n";
+            if (!data.contains("request"))
+            {
+                out["reason"] = "message doesn't contain \"request\" key";
+            }
+            else
+            {
+                handle_set(data, out);
+            }
         }
     }
     else

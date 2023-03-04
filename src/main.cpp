@@ -1,4 +1,3 @@
-
 /**
  * @file main.cpp
  * @author Nilusink
@@ -24,4 +23,3 @@ int main()
 
     Server::run();
 }
- 

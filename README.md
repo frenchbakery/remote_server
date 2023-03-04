@@ -4,10 +4,10 @@ Server to acces the Wombat's motors / servos / etc.
 <br><br>
 
 # Protocol
-The base request must contain the key `type`, which can either have the value `get` or `post`:
+The base request must contain the key `type`, which can either have the value `get` or `set`:
 ```json
 {
-  "type": "get|post",
+  "type": "get|set",
   ...
 }
 ```
@@ -18,37 +18,51 @@ can have following values:
 
 * `motor` <br>
 additionally required:
-  * `port`: **int**
+  * `port`: **int** (0...3)
 
   returns
-  * **int** (-1500...1500) - motor speed
+  * `success`: **bool**
+  * `value`: **int** (-1500...1500)
 
 <br>
 
-* `servo` <br>
+* `servo_pos` <br>
 additionally required:
-  * `port`: **int**
+  * `port`: **int** (0...3)
 
   returns
-  * **int** (0...2047) - servo position
+  * `success`: **bool**
+  * `value`: **int** (0...2047)
+
+<br>
+
+* `servo_enabled` <br>
+additionally required:
+  * `port`: **int** (0...3)
+
+  returns
+  * `success`: **bool**
+  * `value`: **bool**
 
 <br>
 
 * `digital` <br>
 additionally required:
-  * `port`: **int**
+  * `port`: **int** (0...9)
 
   returns
-  * `bool` - value
+  * `success`: **bool**
+  * `value`: **bool**
 
 <br>
 
 * `analog` <br>
 additionally required:
-  * `port`: **int**
+  * `port`: **int** (0...4)
 
   returns
-  * `int` (0...4086) - value
+  * `success`: **bool**
+  * `value`: **int** (0...4086)
 
 <br>
 
@@ -67,5 +81,58 @@ return:
 {
   "success": true,
   "value": 1834
+}
+```
+
+<br><br>
+
+## set
+When requesting a `set`, the message must contain the `request` key, which
+can have following values:
+
+* `motor` <br>
+additionally required:
+  * `port`: **int** (0...3)
+  * `velocity`: **int** (-1500...1500)
+
+  returns
+  * `success`: **bool**
+
+<br>
+
+* `servo_pos` <br>
+additionally required:
+  * `port`: **int** (0...3)
+  * `position`: **int** (0...2047)
+
+  returns
+  * `success`: **bool**
+
+<br>
+
+* `servo_enabled` <br>
+additionally required:
+  * `port`: **int** (0...3)
+  * `enabled`: **bool**
+
+  returns
+  * `success`: **bool**
+
+<br>
+
+### Example:
+request:
+```json
+{
+  "type": "set",
+  "request": "motor",
+  "port": 1300
+}
+```
+
+return:
+```json
+{
+  "success": true
 }
 ```

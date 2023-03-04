@@ -16,16 +16,11 @@
 #include <string>
 
 
+// port number setup  (0...n)
 #define N_MOTORS 4
 #define N_SERVOS 4
 #define N_DIGITALS 10
 #define N_ANALOGS 5
-
-#define CLR_RESET '\033[1;0m'
-#define STL_BOLD '\033[1;1m'
-#define CLR_RED '\033[0;31m'
-#define CLR_GREEN '\033[0;32m'
-#define CLR_BLUE '\033[0;34m'
 
 
 namespace Control
