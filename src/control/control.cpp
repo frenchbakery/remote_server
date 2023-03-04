@@ -11,35 +11,42 @@
 #include <nlohmann/json.hpp>
 #include "control.hpp"
 #include <iostream>
+#include <vector>
+#include <memory>
 
 
 using json = nlohmann::json;
 
 // initialize literally everything
-Control::Motor Control::motor0(0);
-Control::Motor Control::motor1(1);
-Control::Motor Control::motor2(2);
-Control::Motor Control::motor3(3);
-const std::vector<Control::Motor> Control::motors
-{
-    motor0,
-    motor1,
-    motor2,
-    motor3
-};
-
-// const std::vector<Control::Servo> Control::servos
-// {{0}, {1}, {2}, {3}};
-
-// const std::vector<Control::Digital> Control::digitals
-// {{0}, {1}, {2}, {3}, {4}, {5}, {6}, {7}, {8}, {9}};
-
-// const std::vector<Control::Analog> Control::analogs
-// {{0}, {1}, {2}, {3}, {4}};
+std::vector<Control::Motor> Control::motors;
+std::vector<Control::Servo> Control::servos;
+std::vector<Control::Digital> Control::digitals;
+std::vector<Control::Analog> Control::analogs;
 
 
 void Control::setup()
-{}
+{
+    // initialize motors / servos / digitals / analogs
+    for (int i = 0; i <= N_MOTORS; i++)
+    {
+        motors.emplace_back(std::make_shared<Motor>(i));
+    }
+
+    for (int i = 0; i <= N_SERVOS; i++)
+    {
+        servos.emplace_back(std::make_shared<Servo>(i));
+    }
+
+    for (int i = 0; i <= N_DIGITALS; i++)
+    {
+        digitals.emplace_back(std::make_shared<Digital>(i));
+    }
+
+    for (int i = 0; i <= N_ANALOGS; i++)
+    {
+        analogs.emplace_back(std::make_shared<Analog>(i));
+    }
+}
 
 
 void handle_get(json data, json &out)
