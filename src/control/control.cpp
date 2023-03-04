@@ -17,11 +17,11 @@
 
 using json = nlohmann::json;
 
-// initialize literally everything
-std::vector<Control::Motor> Control::motors;
-std::vector<Control::Servo> Control::servos;
-std::vector<Control::Digital> Control::digitals;
-std::vector<Control::Analog> Control::analogs;
+// initialize vectors
+std::vector<std::shared_ptr<Control::Motor>> Control::motors; 
+std::vector<std::shared_ptr<Control::Servo>> Control::servos;
+std::vector<std::shared_ptr<Control::Digital>> Control::digitals;
+std::vector<std::shared_ptr<Control::Analog>> Control::analogs;
 
 
 void Control::setup()
@@ -49,9 +49,17 @@ void Control::setup()
 }
 
 
+/**
+ * @brief handle all get requests
+ * 
+ * @param data input json object
+ * @param out output json object
+ */
 void handle_get(json data, json &out)
 {
     std::string request = data["request"];
+
+    // motors
     if (request == "motor")
     {
         if (!data.contains("port"))
@@ -64,11 +72,75 @@ void handle_get(json data, json &out)
         if (!(0 <= port && port <= 4))
         {
             out["reason"] = "invalid motor port";
+            return;
         }
 
         out["success"] = true;
-        out["value"] = Control::motors[port].getPosition();
+        out["value"] = Control::motors[port]->getPosition();
     }
+
+    // servos
+    else if (request == "servo")
+    {
+        if (!data.contains("port"))
+        {
+            out["reason"] = "message doesn't contain \"port\" key";
+            return;
+        }
+
+        int port = data["port"];
+        if (!(0 <= port && port <= 4))
+        {
+            out["reason"] = "invalid servo port";
+            return;
+        }
+
+        out["success"] = true;
+        out["value"] = Control::servos[port]->position();
+    }
+
+    // digitals
+    else if (request == "digital")
+    {
+        if (!data.contains("port"))
+        {
+            out["reason"] = "message doesn't contain \"port\" key";
+            return;
+        }
+
+        int port = data["port"];
+        if (!(0 <= port && port <= 10))
+        {
+            out["reason"] = "invalid digital port";
+            return;
+        }
+
+        out["success"] = true;
+        out["value"] = Control::digitals[port]->value();
+    }
+
+    // analogs
+    else if (request == "analog")
+    {
+        if (!data.contains("port"))
+        {
+            out["reason"] = "message doesn't contain \"port\" key";
+            return;
+        }
+
+        int port = data["port"];
+        if (!(0 <= port && port <= 5))
+        {
+            out["reason"] = "invalid analog port";
+            return;
+        }
+
+        out["success"] = true;
+        out["value"] = Control::analogs[port]->value();
+
+    }
+
+    // undefined
     else
     {
         out["success"] = false;
@@ -79,11 +151,15 @@ void handle_get(json data, json &out)
 
 std::string Control::message_handler(std::string message)
 {
+    // decode data
     json data = json::parse(message);
     json out = {
         {"success", false},
     };
 
+    std::cout << CLR_BLUE << ":receive:" << CLR_RESET << "  " << data << std::endl;
+
+    // process data
     if (data.contains("type"))
     {
         std::string type = data["type"];
@@ -102,17 +178,21 @@ std::string Control::message_handler(std::string message)
         else if (type == "post")
         {
             std::cout << "POST\n";
+            out["success"] = false;
+            out["reason"] = "Not implemented yet";
         }
         else if (type == "NaN")
         {
             std::cout << "tpye not found in data\n";
-        }   
+        }
     }
     else
     {
         std::cout << "doesn't contain \"type\"\n";
         out["reason"] = "message doesn't contain \"type\" key";
     }
+
+    std::cout << CLR_GREEN << ":return:" << CLR_RESET << "  " << out << std::endl;
 
     return out.dump();
 }
