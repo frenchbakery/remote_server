@@ -126,7 +126,8 @@ request:
 {
   "type": "set",
   "request": "motor",
-  "port": 1300
+  "port": 0,
+  "velocity": 1300
 }
 ```
 
