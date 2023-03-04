@@ -1,31 +1,27 @@
-#include <iostream>
 
-struct coord
-{
-private:
-    int z;
+/**
+ * @file main.cpp
+ * @author Nilusink
+ * @brief runs the server
+ * @version 1.0
+ * @date 2023-03-04
+ * 
+ * @copyright Copyright frenchbakery (c) 2023
+ * 
+ */
 
-public:
-    int x, y;
+#include "server/server.hpp"
+#include "control/control.hpp"
+#include <kipr/time/time.h>
 
-    int sum(int _c)
-    {
-        return x + y + _c;
-    }
-};
+#define PORT 9999
 
-void myfunc(int _a)
-{
-    std::cout << _a << std::endl;
-}
 
 int main()
 {
-    std::cout << "Hello, World!" << std::endl;
+    Control::setup();
+    Server::setup(PORT, Control::message_handler);
 
-    coord mylocation;
-
-    std::cout << mylocation.sum(85) << std::endl;
-
-    return 0;
+    Server::run();
 }
+ 
