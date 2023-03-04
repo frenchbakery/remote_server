@@ -58,7 +58,7 @@ void Control::setup()
  */
 void handle_get(json data, json &out)
 {
-    std::string request = data["request"];
+    std::string request = data.at("request");
 
     // motors
     if (request == "motor")
@@ -70,7 +70,7 @@ void handle_get(json data, json &out)
             return;
         }
 
-        int port = data["port"];
+        int port = data.at("port");
         if (!(0 <= port && port <= 4))
         {
             out["success"] = false;
@@ -92,7 +92,7 @@ void handle_get(json data, json &out)
             return;
         }
 
-        int port = data["port"];
+        int port = data.at("port");
         if (!(0 <= port && port <= 4))
         {
             out["success"] = false;
@@ -112,7 +112,7 @@ void handle_get(json data, json &out)
             return;
         }
 
-        int port = data["port"];
+        int port = data.at("port");
         if (!(0 <= port && port <= 4))
         {
             out["success"] = false;
@@ -134,7 +134,7 @@ void handle_get(json data, json &out)
             return;
         }
 
-        int port = data["port"];
+        int port = data.at("port");
         if (!(0 <= port && port <= 10))
         {
             out["success"] = false;
@@ -156,7 +156,7 @@ void handle_get(json data, json &out)
             return;
         }
 
-        int port = data["port"];
+        int port = data.at("port");
         if (!(0 <= port && port <= 5))
         {
             out["success"] = false;
@@ -198,7 +198,7 @@ void handle_set(json data, json &out)
             return;
         }
 
-        int port = data["port"];
+        int port = data.at("port");
         if (!(0 <= port && port <= 4))
         {
             out["success"] = false;
@@ -213,7 +213,7 @@ void handle_set(json data, json &out)
             return;
         }
 
-        int velocity = data["velocity"];
+        int velocity = data.at("velocity");
         if (!(-1500 <= velocity && velocity <= 1500))
         {
             out["success"] = false;
@@ -236,7 +236,7 @@ void handle_set(json data, json &out)
             return;
         }
 
-        int port = data["port"];
+        int port = data.at("port");
         if (!(0 <= port && port <= 4))
         {
             out["success"] = false;
@@ -251,7 +251,7 @@ void handle_set(json data, json &out)
             return;
         }
 
-        int position = data["position"];
+        int position = data.at("position");
         if (!(0 <= position && position <= 2047))
         {
             out["success"] = false;
@@ -272,7 +272,7 @@ void handle_set(json data, json &out)
             return;
         }
 
-        int port = data["port"];
+        int port = data.at("port");
         if (!(0 <= port && port <= 4))
         {
             out["success"] = false;
@@ -314,7 +314,7 @@ std::string Control::message_handler(std::string message)
     // process data
     if (data.contains("type"))
     {
-        std::string type = data["type"];
+        std::string type = data.at("type");
 
         if (type == "get")
         {
