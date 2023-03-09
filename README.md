@@ -100,6 +100,16 @@ additionally required:
 
 <br>
 
+* `create_motor` <br>
+additionally required:
+  * `port`: **int** (0...2)
+  * `velocity`: **int** (-500...500)
+
+  returns
+  * `success`: **bool**
+
+<br>
+
 * `servo_pos` <br>
 additionally required:
   * `port`: **int** (0...3)

@@ -20,6 +20,7 @@ using json = nlohmann::json;
 
 // initialize vectors
 std::vector<std::shared_ptr<Control::Motor>> Control::motors; 
+std::vector<std::shared_ptr<Control::CMotor>> Control::cmotors; 
 std::vector<std::shared_ptr<Control::Servo>> Control::servos;
 std::vector<std::shared_ptr<Control::Digital>> Control::digitals;
 std::vector<std::shared_ptr<Control::Analog>> Control::analogs;
@@ -31,6 +32,12 @@ void Control::setup()
     for (int i = 0; i <= N_MOTORS; i++)
     {
         motors.emplace_back(std::make_shared<Motor>(i));
+    }
+    
+    for (int i = 0; i <= N_CMOTORS; i++)
+    {
+        cmotors.emplace_back(std::make_shared<CMotor>(i));
+        cmotors[i]->disablePositionControl();
     }
 
     for (int i = 0; i <= N_SERVOS; i++)
@@ -222,6 +229,44 @@ void handle_set(json data, json &out)
         }
 
         Control::motors[port]->moveAtVelocity(velocity);
+
+        out["success"] = true;
+    }
+
+    // create motors
+    else if (request == "create_motor")
+    {
+        if (!data.contains("port"))
+        {
+            out["success"] = false;
+            out["reason"] = "message doesn't contain \"port\" key";
+            return;
+        }
+
+        int port = data.at("port");
+        if (port < 0 || port > 1)
+        {
+            out["success"] = false;
+            out["reason"] = "invalid motor port";
+            return;
+        }
+
+        if (!data.contains("velocity"))
+        {
+            out["success"] = false;
+            out["reason"] = "message doesn't contain \"velocity\" key";
+            return;
+        }
+
+        int velocity = data.at("velocity");
+        if (!(-500 <= velocity && velocity <= 500))
+        {
+            out["success"] = false;
+            out["reason"] = "invalid motor velocity";
+            return;
+        }
+
+        Control::cmotors[port]->moveAtVelocity(velocity);
 
         out["success"] = true;
     }
